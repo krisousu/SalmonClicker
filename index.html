@@ -6,10 +6,17 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #fdf6f0;
-      color: #2c2c2c;
+      background-color: #fff3e6;
+      color: #333;
       text-align: center;
-      padding: 40px;
+      overflow: hidden;
+    }
+
+    #game {
+      position: relative;
+      width: 600px;
+      height: 600px;
+      margin: 40px auto;
     }
 
     #soup-button {
@@ -19,26 +26,38 @@
       background-size: cover;
       border: none;
       cursor: pointer;
-      margin: 30px auto;
-      display: block;
+      position: absolute;
+      top: 200px;
+      left: 200px;
+      z-index: 2;
+    }
+
+    .spoon {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      background: url('spoon.png') no-repeat center center;
+      background-size: contain;
+      transform-origin: center center;
+      z-index: 1;
     }
 
     .upgrade {
+      margin-top: 20px;
+      font-size: 18px;
       padding: 12px 24px;
-      margin-top: 15px;
-      font-size: 16px;
-      background-color: #ffe2b2;
-      border: 2px solid #d9a066;
+      background-color: #ffdbac;
+      border: 2px solid #c97b26;
+      border-radius: 10px;
       cursor: pointer;
-      border-radius: 8px;
     }
 
     .upgrade:hover {
-      background-color: #ffd699;
+      background-color: #ffc777;
     }
 
     h1, h2 {
-      margin-bottom: 10px;
+      margin: 0;
     }
   </style>
 </head>
@@ -47,41 +66,49 @@
   <h1>🥣 Salmon Soup Clicker</h1>
   <h2>Soup: <span id="soupCount">0</span></h2>
 
-  <button id="soup-button" title="Click the salmon soup!"></button>
-
-  <div>
-    <button class="upgrade" onclick="buySpoon()">
-      Buy Spoon 🥄 (Cost: <span id="spoonCost">15</span>)
-    </button>
-    <p>Spoons owned: <span id="spoonCount">0</span></p>
+  <div id="game">
+    <button id="soup-button" title="Click the soup!"></button>
+    <!-- Spoons will be added here -->
   </div>
 
-  <!-- Local click sound -->
+  <button class="upgrade" onclick="buySpoon()">
+    Buy Spoon 🥄 (Cost: <span id="spoonCost">15</span>)
+  </button>
+  <p>Spoons owned: <span id="spoonCount">0</span></p>
+
   <audio id="clickSound" src="click.wav" preload="auto"></audio>
 
   <script>
     let soup = 0;
     let spoons = 0;
     let spoonCost = 15;
+    let angleOffset = 0;
+    const spoonElements = [];
 
     const soupButton = document.getElementById('soup-button');
     const clickSound = document.getElementById('clickSound');
     const soupCountDisplay = document.getElementById('soupCount');
     const spoonCountDisplay = document.getElementById('spoonCount');
     const spoonCostDisplay = document.getElementById('spoonCost');
+    const gameArea = document.getElementById('game');
 
     soupButton.addEventListener('click', () => {
       soup++;
-      clickSound.currentTime = 0;
-      clickSound.play();
+      playSound();
       updateDisplay();
     });
+
+    function playSound() {
+      clickSound.currentTime = 0;
+      clickSound.play();
+    }
 
     function buySpoon() {
       if (soup >= spoonCost) {
         soup -= spoonCost;
         spoons++;
-        spoonCost = Math.floor(spoonCost * 1.15);
+        spoonCost = Math.floor(spoonCost * 1.2);
+        createSpoon();
         updateDisplay();
       }
     }
@@ -92,10 +119,47 @@
       spoonCostDisplay.textContent = spoonCost;
     }
 
+    function createSpoon() {
+      const spoon = document.createElement('div');
+      spoon.className = 'spoon';
+      gameArea.appendChild(spoon);
+      spoonElements.push({ el: spoon, angle: Math.random() * 360 });
+    }
+
+    // Make spoons orbit soup
+    function animateSpoons() {
+      const centerX = 300; // center of soup
+      const centerY = 300;
+      const radius = 140;
+
+      for (let i = 0; i < spoonElements.length; i++) {
+        const spoon = spoonElements[i];
+        spoon.angle += 0.5; // rotation speed
+        const rad = spoon.angle * Math.PI / 180;
+        const x = centerX + radius * Math.cos(rad) - 32;
+        const y = centerY + radius * Math.sin(rad) - 32;
+        spoon.el.style.left = `${x}px`;
+        spoon.el.style.top = `${y}px`;
+
+        // Rotate so the spoon top faces the center
+        const angleToCenter = Math.atan2(centerY - y, centerX - x);
+        const deg = angleToCenter * 180 / Math.PI + 90;
+        spoon.el.style.transform = `rotate(${deg}deg)`;
+      }
+
+      requestAnimationFrame(animateSpoons);
+    }
+
+    // Every second, all spoons click the soup
     setInterval(() => {
-      soup += spoons;
-      updateDisplay();
-    }, 1000); // Spoons add soup every second
+      if (spoons > 0) {
+        soup += spoons;
+        playSound();
+        updateDisplay();
+      }
+    }, 1000);
+
+    animateSpoons();
   </script>
 
 </body>
