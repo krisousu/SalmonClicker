@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Salmon Soup Clicker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fdf6f0;
+      color: #2c2c2c;
+      text-align: center;
+      padding: 40px;
+    }
+
+    #soup-button {
+      width: 200px;
+      height: 200px;
+      background: url('sls.png') no-repeat center center;
+      background-size: cover;
+      border: none;
+      cursor: pointer;
+      margin: 30px auto;
+      display: block;
+    }
+
+    .upgrade {
+      padding: 12px 24px;
+      margin-top: 15px;
+      font-size: 16px;
+      background-color: #ffe2b2;
+      border: 2px solid #d9a066;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .upgrade:hover {
+      background-color: #ffd699;
+    }
+
+    h1, h2 {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🥣 Salmon Soup Clicker</h1>
+  <h2>Soup: <span id="soupCount">0</span></h2>
+
+  <button id="soup-button" title="Click the salmon soup!"></button>
+
+  <div>
+    <button class="upgrade" onclick="buySpoon()">
+      Buy Spoon 🥄 (Cost: <span id="spoonCost">15</span>)
+    </button>
+    <p>Spoons owned: <span id="spoonCount">0</span></p>
+  </div>
+
+  <!-- Local click sound -->
+  <audio id="clickSound" src="click.wav" preload="auto"></audio>
+
+  <script>
+    let soup = 0;
+    let spoons = 0;
+    let spoonCost = 15;
+
+    const soupButton = document.getElementById('soup-button');
+    const clickSound = document.getElementById('clickSound');
+    const soupCountDisplay = document.getElementById('soupCount');
+    const spoonCountDisplay = document.getElementById('spoonCount');
+    const spoonCostDisplay = document.getElementById('spoonCost');
+
+    soupButton.addEventListener('click', () => {
+      soup++;
+      clickSound.currentTime = 0;
+      clickSound.play();
+      updateDisplay();
+    });
+
+    function buySpoon() {
+      if (soup >= spoonCost) {
+        soup -= spoonCost;
+        spoons++;
+        spoonCost = Math.floor(spoonCost * 1.15);
+        updateDisplay();
+      }
+    }
+
+    function updateDisplay() {
+      soupCountDisplay.textContent = soup;
+      spoonCountDisplay.textContent = spoons;
+      spoonCostDisplay.textContent = spoonCost;
+    }
+
+    setInterval(() => {
+      soup += spoons;
+      updateDisplay();
+    }, 1000); // Spoons add soup every second
+  </script>
+
+</body>
+</html>
